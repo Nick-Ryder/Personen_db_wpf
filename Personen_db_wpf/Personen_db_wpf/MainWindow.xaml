@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Personen_db_wpf"
         mc:Ignorable="d"
-        Title="AddressDB" Height="610" Width="944">
+        Title="AddressDB" Height="610" Width="1024">
     <Grid>
         <Label x:Name="Fname" Content="Vorname:" HorizontalAlignment="Left" Margin="44,26,0,0" VerticalAlignment="Top"/>
         <Label x:Name="Lname" Content="Nachname:" HorizontalAlignment="Left" Margin="44,52,0,0" VerticalAlignment="Top"/>
@@ -27,17 +27,18 @@
         <Button x:Name="Delete" Content="Löschen" HorizontalAlignment="Left" Margin="124,245,0,0" VerticalAlignment="Top" Width="75"/>
         <Button x:Name="Change" Content="Eintragen" HorizontalAlignment="Left" Margin="204,245,0,0" VerticalAlignment="Top" Width="75"/>
         <Button x:Name="New" Content="Neu" HorizontalAlignment="Left" Margin="284,245,0,0" VerticalAlignment="Top" Width="75"/>
-        <ListView x:Name="listView1" Margin="0,287,0,0">
+        <ListView x:Name="listView1" Margin="0,287,0,0" ItemsSource="{Binding}" MouseDoubleClick="ItemActivate" MouseLeftButtonUp="ItemActivate">
             <ListView.View>
                 <GridView>
-                    <GridViewColumn Header="Vorname" Width="120" DisplayMemberBinding="{Binding Fname}" />
-                    <GridViewColumn Header="Nachname" Width="120" DisplayMemberBinding="{Binding Lname}" />
+                    <GridViewColumn Header="Vorname" Width="120" DisplayMemberBinding="{Binding FName}" />
+                    <GridViewColumn Header="Nachname" Width="120" DisplayMemberBinding="{Binding LName}" />
                     <GridViewColumn Header="Straße" Width="150" DisplayMemberBinding="{Binding Street}" />
                     <GridViewColumn Header="Nummer" Width="50" DisplayMemberBinding="{Binding Number}" />
-                    <GridViewColumn Header="Plz" Width="40" DisplayMemberBinding="{Binding Plz}" />
+                    <GridViewColumn Header="Plz" Width="45" DisplayMemberBinding="{Binding Plz}" />
                     <GridViewColumn Header="Ort" Width="150" DisplayMemberBinding="{Binding Location}" />
                     <GridViewColumn Header="Telefon" Width="150" DisplayMemberBinding="{Binding Telephone}" />
                     <GridViewColumn Header="Email" Width="150" DisplayMemberBinding="{Binding Email}" />
+                    <GridViewColumn Header="Id" Width="30" DisplayMemberBinding="{Binding Id}" />
                 </GridView>
             </ListView.View>
         </ListView>
