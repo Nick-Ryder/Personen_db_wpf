@@ -85,7 +85,20 @@ namespace Personen_db_wpf
 
         private void Update_Click(object sender, RoutedEventArgs e)
         {
-
+            if (listView1.SelectedItems.Count > 0)
+            {
+                GetTextboxEntries();
+                //myPerson.Id = Convert.ToInt32(listView1.SelectedItems[0].SubItems[8].Text);
+                int index = myDB.UpdateDB(myPerson);
+                listView1.Items.Clear();
+                ShowAddresses();
+                ClearTextboxEntries();
+                LockForm();
+            }
+            else
+            {
+                MessageBox.Show("Es ist kein Eintrag selektiert", "Achtung", MessageBoxButton.OK);
+            }
         }
 
         private void New_Click(object sender, RoutedEventArgs e)
