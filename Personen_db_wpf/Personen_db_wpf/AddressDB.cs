@@ -155,7 +155,7 @@ namespace Personen_db_wpf
             return index;
         }
 
-        public bool RemoveFromDb(int id)
+        public bool DeleteFromDB(int id)
         {
             try
             {

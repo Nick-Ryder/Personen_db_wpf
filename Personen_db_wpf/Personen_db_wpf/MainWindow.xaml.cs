@@ -43,21 +43,14 @@ namespace Personen_db_wpf
 
         public void Insert_Click(object sender, EventArgs e)
         {
-            myPerson.FName = TextBoxFname.Text;
-            myPerson.LName = TextBoxLname.Text;
-            myPerson.Street = TextBoxStreet.Text;
-            myPerson.Number = TextBoxNumber.Text;
-            myPerson.Plz = TextBoxPlz.Text;
-            myPerson.Location = TextBoxLocation.Text;
-            myPerson.Telephone = TextBoxTelephone.Text;
-            myPerson.Email = TextBoxEmail.Text;
-            // Personendaten in mdf eintragen
+            GetTextboxEntries();
+            // Personendaten in Datenbank eintragen
             int index = myDB.InsertDB(myPerson);            // index = Primärschlüssel des geänderten Eintrags in DB
             myPerson.Id = index;
-            
+
             // Daten in Listview eintragen
             listView1.Items.Add(myPerson);
-            ClearForm();
+            ClearTextboxEntries();
             LockForm();
         }
 
@@ -67,15 +60,15 @@ namespace Personen_db_wpf
             {
                 myPerson = (Person)listView1.Items.GetItemAt(listView1.SelectedIndex);
                 //MessageBox.Show(listView1.SelectedIndices[0].ToString(), "Hallo", MessageBoxButtons.OK);
-                MessageBox.Show(myPerson.Id.ToString(), "Hallo", MessageBoxButton.OK);
-                if (myDB.RemoveFromDb(myPerson.Id))
+                //MessageBox.Show(myPerson.Id.ToString(), "Hallo", MessageBoxButton.OK);
+                if (myDB.DeleteFromDB(myPerson.Id))
                 {
                     listView1.Items.RemoveAt(listView1.SelectedIndex);
-                    ClearForm();
+                    ClearTextboxEntries();
                     LockForm();
                     Insert.IsEnabled = false;
                     Delete.IsEnabled = false;
-                    Change.IsEnabled = false;
+                    Update.IsEnabled = false;
                     New.IsEnabled = true;
                 }
                 else
@@ -89,12 +82,18 @@ namespace Personen_db_wpf
             }
         }
 
+
+        private void Update_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
         private void New_Click(object sender, RoutedEventArgs e)
         {
-            ClearForm();
+            ClearTextboxEntries();
             UnlockForm();
             Delete.IsEnabled = false;
-            Change.IsEnabled = false;
+            Update.IsEnabled = false;
             TextBoxFname.Focus();
         }
 
@@ -120,12 +119,24 @@ namespace Personen_db_wpf
 
                 UnlockForm();
                 Insert.IsEnabled = true;
-                Change.IsEnabled = true;
+                Update.IsEnabled = true;
                 Delete.IsEnabled = true;
             }
         }
+        
+        private void GetTextboxEntries()
+        {
+            myPerson.FName = TextBoxFname.Text;
+            myPerson.LName = TextBoxLname.Text;
+            myPerson.Street = TextBoxStreet.Text;
+            myPerson.Number = TextBoxNumber.Text;
+            myPerson.Plz = TextBoxPlz.Text;
+            myPerson.Location = TextBoxLocation.Text;
+            myPerson.Telephone = TextBoxTelephone.Text;
+            myPerson.Email = TextBoxEmail.Text;
+        }
 
-        private void ClearForm()
+        private void ClearTextboxEntries()
         {
             TextBoxFname.Text = "";
             TextBoxLname.Text = "";
@@ -148,7 +159,7 @@ namespace Personen_db_wpf
             TextBoxTelephone.IsEnabled = false;
             TextBoxEmail.IsEnabled = false;
             Insert.IsEnabled = false;
-            Change.IsEnabled = false;
+            Update.IsEnabled = false;
             Delete.IsEnabled = false;
             New.IsEnabled = true;
         }
@@ -164,7 +175,7 @@ namespace Personen_db_wpf
             TextBoxTelephone.IsEnabled = true;
             TextBoxEmail.IsEnabled = true;
             Insert.IsEnabled = true;
-            Change.IsEnabled = true;
+            Update.IsEnabled = true;
             Delete.IsEnabled = true;
             New.IsEnabled = true;
         }
