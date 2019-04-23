@@ -151,14 +151,14 @@ namespace Personen_db_wpf
 
         private void ClearTextboxEntries()
         {
-            TextBoxFname.Text = "";
-            TextBoxLname.Text = "";
-            TextBoxStreet.Text = "";
-            TextBoxNumber.Text = "";
-            TextBoxPlz.Text = "";
-            TextBoxLocation.Text = "";
-            TextBoxTelephone.Text = "";
-            TextBoxEmail.Text = "";
+            TextBoxFname.Text = string.Empty;
+            TextBoxLname.Text = string.Empty;
+            TextBoxStreet.Text = string.Empty;
+            TextBoxNumber.Text = string.Empty;
+            TextBoxPlz.Text = string.Empty;
+            TextBoxLocation.Text = string.Empty;
+            TextBoxTelephone.Text = string.Empty;
+            TextBoxEmail.Text = string.Empty;
         }
 
         private void LockForm()
