@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Data;
 using System.Data.SqlClient;
+using System.Windows;
 
 namespace Personen_db_wpf
 {
@@ -86,40 +87,47 @@ namespace Personen_db_wpf
         public int InsertDB(Person person)
         {
             int index;
-            using (SqlConnection connection = new SqlConnection(datapath))
+            try
             {
-                connection.Open();
-                using (SqlCommand command = new SqlCommand())
+                using (SqlConnection connection = new SqlConnection(datapath))
                 {
-                    command.Connection = connection;
-                    //string sql = "Insert into Address Values('" + Guid.NewGuid() + "','"
-                    string sql = "Insert into Address Values('"
-                        + person.FName + "','"
-                        + person.LName + "','"
-                        + person.Street + "','"
-                        + person.Number + "','"
-                        + person.Plz + "','"
-                        + person.Location + "','"
-                        + person.Telephone + "','"
-                        + person.Email + "')";
-                    command.CommandText = sql;
-                    int affectedRows = command.ExecuteNonQuery();
-                    command.CommandText = "SELECT SCOPE_IDENTITY()";
-                    index = Convert.ToInt32(command.ExecuteScalar());
-                    //MessageBox.Show("After insert, affected rows: " + affectedRows, "Affected", MessageBoxButtons.OK);
-                    //MessageBox.Show("After insert, Index " + index, "Affected", MessageBoxButtons.OK);
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
+                    {
+                        command.Connection = connection;
+                        //string sql = "Insert into Address Values('" + Guid.NewGuid() + "','"
+                        string sql = "Insert into Address Values('"
+                            + person.FName + "','"
+                            + person.LName + "','"
+                            + person.Street + "','"
+                            + person.Number + "','"
+                            + person.Plz + "','"
+                            + person.Location + "','"
+                            + person.Telephone + "','"
+                            + person.Email + "')";
+                        command.CommandText = sql;
+                        int affectedRows = command.ExecuteNonQuery();
+                        command.CommandText = "SELECT SCOPE_IDENTITY()";
+                        index = Convert.ToInt32(command.ExecuteScalar());
+                        //MessageBox.Show("After insert, affected rows: " + affectedRows, "Affected", MessageBoxButton.OK);
+                        //MessageBox.Show("After insert, Index " + index, "Affected", MessageBoxButtons.OK);
+                    }
+                    connection.Close();
                 }
-                connection.Close();
+                return index;
             }
-            return index;
+            catch
+            {
+                return -1;
+            }
         }
 
         public int UpdateDB(Person person)
         {
-            int index = -1;
-            using (SqlConnection connection = new SqlConnection(datapath))
+            int affectedRows = 0;
+            try
             {
-                try
+                using (SqlConnection connection = new SqlConnection(datapath))
                 {
                     connection.Open();
                     using (SqlCommand command = new SqlCommand())
@@ -136,23 +144,22 @@ namespace Personen_db_wpf
                             + person.Telephone + "', Email='"
                             + person.Email + "' Where Id=" + person.Id;
                         command.CommandText = sql;
-                        int affectedRows = command.ExecuteNonQuery();
-                        command.CommandText = "SELECT SCOPE_IDENTITY()";
-                        index = Convert.ToInt32(command.ExecuteScalar());
-                        //MessageBox.Show("After insert, affected rows: " + affectedRows, "Affected", MessageBoxButtons.OK);
-                        //MessageBox.Show("After insert, Index " + index, "Affected", MessageBoxButtons.OK);
+                        affectedRows = command.ExecuteNonQuery();
+                        //command.CommandText = "SELECT SCOPE_IDENTITY()";
+                        //index = Convert.ToInt32(command.ExecuteScalar());
+                        //MessageBox.Show("After insert, affected rows: " + affectedRows, "Affected", MessageBoxButton.OK);
+                        //MessageBox.Show("After insert, Index " + index.ToString(), "Affected", MessageBoxButton.OK);  
                     }
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine(ex.Message);
-                }
-                finally
-                {
                     connection.Close();
                 }
+                return affectedRows;
             }
-            return index;
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+                MessageBox.Show(ex.Message, "Error", MessageBoxButton.OK);
+                return affectedRows;
+            }
         }
 
         public bool DeleteFromDB(int id)
@@ -180,40 +187,44 @@ namespace Personen_db_wpf
             }
         }
 
-        public List<Person> ReadDB()
+        public List<Person> ReadDB(String sorting)
         {
             List<Person> readAddresses = new List<Person>();
-            //Person address = new Person();
-            int i = 0;
-            using (SqlConnection connection = new SqlConnection(datapath))
+            try
             {
-                connection.Open();
-                using (SqlCommand command = new SqlCommand())
+                using (SqlConnection connection = new SqlConnection(datapath))
                 {
-                    command.Connection = connection;
-                    command.CommandText = "Select * from Address order by Nachname";
-                    SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection);
-                    while (reader.Read())
+                    connection.Open();
+                    using (SqlCommand command = new SqlCommand())
                     {
-                        Person address = new Person
+                        command.Connection = connection;
+                        command.CommandText = "Select * from Address order by " + sorting;
+                        SqlDataReader reader = command.ExecuteReader(CommandBehavior.CloseConnection);
+                        while (reader.Read())
                         {
-                            Id = reader.GetInt32(0),
-                            FName = reader.GetString(1),
-                            LName = reader.GetString(2),
-                            Street = reader.GetString(3),
-                            Number = reader.GetString(4),
-                            Plz = reader.GetString(5),
-                            Location = reader.GetString(6),
-                            Telephone = reader.GetString(7),
-                            Email = reader.GetString(8)
-                        };
-                        readAddresses.Add(address);
-                        i++;
+                            Person address = new Person
+                            {
+                                Id = reader.GetInt32(0),
+                                FName = reader.GetString(1),
+                                LName = reader.GetString(2),
+                                Street = reader.GetString(3),
+                                Number = reader.GetString(4),
+                                Plz = reader.GetString(5),
+                                Location = reader.GetString(6),
+                                Telephone = reader.GetString(7),
+                                Email = reader.GetString(8)
+                            };
+                            readAddresses.Add(address);
+                        }
                     }
                     connection.Close();
                 }
+                return readAddresses;
             }
-            return readAddresses;
+            catch
+            {
+                return null;
+            }
         }
     }
 }

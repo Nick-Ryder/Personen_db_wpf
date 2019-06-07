@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.ComponentModel;
 
 namespace Personen_db_wpf
 {
@@ -23,42 +24,54 @@ namespace Personen_db_wpf
         public Person myPerson = new Person();
         public AddressDB myDB = new AddressDB();
         public Person SelectedPerson { get; set; }
+        String standardSort = "Vorname";
+
+        GridViewColumnHeader _lastHeaderClicked = null;
+        ListSortDirection _lastDirection = ListSortDirection.Ascending;
 
         public MainWindow()
         {
             InitializeComponent();
-            ShowAddresses();
+            ShowAddresses(standardSort);
             LockForm();
         }
 
-        private void ShowAddresses()
+        private void ShowAddresses(String sortBy)
         {
             List<Person> myAddresses = new List<Person>();
-            myAddresses = myDB.ReadDB();
-            foreach (Person entry in myAddresses)
-            {
-                listView1.Items.Add(entry);
+            myAddresses = myDB.ReadDB(sortBy);
+            if (myAddresses != null) { 
+                foreach (Person entry in myAddresses)
+                {
+                    listView1.Items.Add(entry);
+                }
             }
+            else MessageBox.Show("Datenbank konnte nicht gelesen werden", "Error", MessageBoxButton.OK);
         }
 
         public void Insert_Click(object sender, EventArgs e)
         {
             GetTextboxEntries();
             // Personendaten in Datenbank eintragen
-            int index = myDB.InsertDB(myPerson);            // index = Primärschlüssel des geänderten Eintrags in DB
-            myPerson.Id = index;
-
-            // Daten in Listview eintragen
-            listView1.Items.Add(myPerson);
-            ClearTextboxEntries();
-            LockForm();
+            int index = myDB.InsertDB(myPerson);            // index = Primärschlüssel des Eintrags in DB
+            if (index > -1)
+            {
+                myPerson.Id = index;
+                // Daten in Listview eintragen
+                //listView1.Items.Add(myPerson);
+                listView1.Items.Clear();
+                ShowAddresses(standardSort);
+                ClearTextboxEntries();
+                LockForm();
+            }
+            else MessageBox.Show("Datenbankfehler beim eintragen!", "Error", MessageBoxButton.OK);
         }
 
         private void Delete_Click(object sender, EventArgs e)
         {
             if (listView1.SelectedItems.Count > 0)
             {
-                myPerson = (Person)listView1.Items.GetItemAt(listView1.SelectedIndex);
+                myPerson = listView1.Items.GetItemAt(listView1.SelectedIndex) as Person;
                 //MessageBox.Show(listView1.SelectedIndices[0].ToString(), "Hallo", MessageBoxButtons.OK);
                 //MessageBox.Show(myPerson.Id.ToString(), "Hallo", MessageBoxButton.OK);
                 if (myDB.DeleteFromDB(myPerson.Id))
@@ -89,11 +102,15 @@ namespace Personen_db_wpf
             {
                 GetTextboxEntries();
                 //myPerson.Id = Convert.ToInt32(listView1.SelectedItems[0].SubItems[8].Text);
-                int index = myDB.UpdateDB(myPerson);
-                listView1.Items.Clear();
-                ShowAddresses();
-                ClearTextboxEntries();
-                LockForm();
+                int affectedRows = myDB.UpdateDB(myPerson);
+                if (affectedRows > 0)
+                {
+                    listView1.Items.Clear();
+                    ShowAddresses(standardSort);
+                    ClearTextboxEntries();
+                    LockForm();
+                }
+                else MessageBox.Show("Datenbankfehler beim Update", "Error", MessageBoxButton.OK);
             }
             else
             {
@@ -120,7 +137,7 @@ namespace Personen_db_wpf
             if (listView1.SelectedItems.Count > 0)
             {
                 //ListViewItem lvi = listView1.SelectedItems[0];
-                myPerson = (Person)listView1.Items.GetItemAt(listView1.SelectedIndex);
+                myPerson = listView1.Items.GetItemAt(listView1.SelectedIndex) as Person;
                 TextBoxFname.Text = myPerson.FName;
                 TextBoxLname.Text = myPerson.LName;
                 TextBoxStreet.Text = myPerson.Street;
@@ -136,7 +153,74 @@ namespace Personen_db_wpf
                 Delete.IsEnabled = true;
             }
         }
-        
+
+        void GridViewColumnHeaderClickedHandler(object sender, RoutedEventArgs e)
+        {
+            var headerClicked = e.OriginalSource as GridViewColumnHeader;
+            ListSortDirection direction;
+            //MessageBox.Show(headerClicked.Column.Header.ToString(), "hghg", MessageBoxButton.OK);
+            
+            if (headerClicked != null)
+            {
+                if (headerClicked.Role != GridViewColumnHeaderRole.Padding)
+                {
+                    if (headerClicked != _lastHeaderClicked)
+                    {
+                        direction = ListSortDirection.Ascending;
+                    }
+                    else
+                    {
+                        if (_lastDirection == ListSortDirection.Ascending)
+                        {
+                            direction = ListSortDirection.Descending;
+                        }
+                        else
+                        {
+                            direction = ListSortDirection.Ascending;
+                        }
+                    }
+
+                    var columnBinding = headerClicked.Column.DisplayMemberBinding as Binding;
+                    var sortBy = columnBinding?.Path.Path ?? headerClicked.Column.Header as string;
+                    MessageBox.Show(sortBy, "bla", MessageBoxButton.OK);
+
+                    //Sort(sortBy, direction);
+                    listView1.Items.Clear();
+                    ShowAddresses("Id");
+
+                    if (direction == ListSortDirection.Ascending)
+                    {
+                        headerClicked.Column.HeaderTemplate =
+                          Resources["HeaderTemplateArrowUp"] as DataTemplate;
+                    }
+                    else
+                    {
+                        headerClicked.Column.HeaderTemplate =
+                          Resources["HeaderTemplateArrowDown"] as DataTemplate;
+                    }
+
+                    // Remove arrow from previously sorted header
+                    if (_lastHeaderClicked != null && _lastHeaderClicked != headerClicked)
+                    {
+                        _lastHeaderClicked.Column.HeaderTemplate = null;
+                    }
+
+                    _lastHeaderClicked = headerClicked;
+                    _lastDirection = direction;
+                }
+            }
+        }
+
+        private void Sort(string sortBy, ListSortDirection direction)
+        {
+            ICollectionView dataView = CollectionViewSource.GetDefaultView(listView1.ItemsSource);
+
+            dataView.SortDescriptions.Clear();
+            SortDescription sd = new SortDescription(sortBy, direction);
+            dataView.SortDescriptions.Add(sd);
+            dataView.Refresh();
+        }
+
         private void GetTextboxEntries()
         {
             myPerson.FName = TextBoxFname.Text;
